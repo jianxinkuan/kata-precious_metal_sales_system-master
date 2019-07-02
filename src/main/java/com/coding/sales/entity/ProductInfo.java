@@ -36,6 +36,17 @@ public class ProductInfo implements Serializable {
         this.discounts = discounts;
     }
 
+    @Override
+    public String toString() {
+        return "ProductInfo{" +
+                "product='" + product + '\'' +
+                ", name='" + name + '\'' +
+                ", unit='" + unit + '\'' +
+                ", price=" + price +
+                ", discounts='" + discounts + '\'' +
+                '}';
+    }
+
     public String getProduct() {
         return product;
     }
