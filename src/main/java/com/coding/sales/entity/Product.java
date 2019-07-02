@@ -22,8 +22,11 @@ public class Product implements Serializable {
     //单价
     private BigDecimal price = BigDecimal.ZERO;
 
-    //优惠信息
-    private String[] discounts;
+    //折扣率：默认为1，不打折
+    private BigDecimal discountRate = BigDecimal.ONE;
+
+    //满减优惠信息
+    private String discounts;
 
     public String getId() {
         return id;
@@ -49,11 +52,19 @@ public class Product implements Serializable {
         this.price = price;
     }
 
-    public String[] getDiscounts() {
+    public BigDecimal getDiscountRate() {
+        return discountRate;
+    }
+
+    public void setDiscountRate(BigDecimal discountRate) {
+        this.discountRate = discountRate;
+    }
+
+    public String getDiscounts() {
         return discounts;
     }
 
-    public void setDiscounts(String[] discounts) {
+    public void setDiscounts(String discounts) {
         this.discounts = discounts;
     }
 }
