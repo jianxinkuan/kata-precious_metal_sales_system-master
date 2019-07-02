@@ -16,6 +16,9 @@ public class ProductInfo implements Serializable {
     //商品编号
     private String product;
 
+    //商品名称
+    private String name;
+
     //单位
     private String unit;
 
@@ -25,12 +28,28 @@ public class ProductInfo implements Serializable {
     //优惠信息
     private String discounts;
 
+    public ProductInfo(String product, String name, String unit, BigDecimal price, String discounts) {
+        this.product = product;
+        this.name = name;
+        this.unit = unit;
+        this.price = price;
+        this.discounts = discounts;
+    }
+
     public String getProduct() {
         return product;
     }
 
     public void setProduct(String product) {
         this.product = product;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getUnit() {
