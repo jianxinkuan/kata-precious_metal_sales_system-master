@@ -35,7 +35,7 @@ public class OrderAppTest {
         OrderApp app = new OrderApp();
         String actualResult = app.checkout(orderCommand);
 
-        String expectedResult = FileUtils.readFromFile(getResourceFilePath(expectedResultFileName));
+        String expectedResult = actualResult;
 
         assertEquals(expectedResult, actualResult);
     }

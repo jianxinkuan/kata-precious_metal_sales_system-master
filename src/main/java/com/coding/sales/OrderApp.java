@@ -29,11 +29,8 @@ public class OrderApp {
         if (args.length != 2) {
             throw new IllegalArgumentException("参数不正确。参数1为销售订单的JSON文件名，参数2为待打印销售凭证的文本文件名.");
         }
-
         String jsonFileName = args[0];
         String txtFileName = args[1];
-//        String jsonFileName = "D:/workspace_jxk/temp/kata-precious_metal_sales_system-master/src/test/resources/sample_command.json";
-//        String txtFileName = "xxxxx.txt";
         String orderCommand = FileUtils.readFromFile(jsonFileName);
         OrderApp app = new OrderApp();
         String result = app.checkout(orderCommand);
@@ -109,6 +106,8 @@ public class OrderApp {
         BigDecimal totalDiscountPrice = BigDecimal.ZERO;
         //优惠券
         if(discount != null && discount.size()>0){
+            //目前只实现1中打折
+            String firstDiscount = discount.get(0);
             //循环订单信息
             for(OrderItemRepresentation orderItem : orderItems){
                 //商品编号
@@ -116,9 +115,14 @@ public class OrderApp {
                 //商品详情
                 ProductInfo productDetail = ProductInfoList.getProductInfo(productNo);
                 //九折
-                if(productDetail.getDiscounts().contains(Constant.NINE_POINT)){
+                if(firstDiscount.contains(Constant.NINE_POINT)){
                     discounts.add(new DiscountItemRepresentation(productNo,orderItem.getProductName(),orderItem.getSubTotal().subtract(orderItem.getSubTotal().multiply(new BigDecimal(0.9)))));
                     totalDiscountPrice = totalDiscountPrice.add(orderItem.getSubTotal().subtract(orderItem.getSubTotal().multiply(new BigDecimal(0.9))));
+                }
+                //九五
+                if(firstDiscount.contains(Constant.NINE_HALF_POINT)){
+                    discounts.add(new DiscountItemRepresentation(productNo,orderItem.getProductName(),orderItem.getSubTotal().subtract(orderItem.getSubTotal().multiply(new BigDecimal(0.95)))));
+                    totalDiscountPrice = totalDiscountPrice.add(orderItem.getSubTotal().subtract(orderItem.getSubTotal().multiply(new BigDecimal(0.95))));
                 }
             }
         }
