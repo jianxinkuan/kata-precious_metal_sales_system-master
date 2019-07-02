@@ -6,14 +6,30 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @desc 订单信息表
+ * @author jianxinkuan
+ * @date 2019年7月2日16点26分
+ */
 public class OrderCommand {
+    //订单ID
     private String orderId;
+    //创建时间
     private String createTime;
+    //会员ID
     private String memberId;
+    //购买商品集合
     private List<OrderItemCommand> items;
+    //支付信息集合
     private List<PaymentCommand> payments;
+    //此订单所用优惠券
     private List<String> discounts;
 
+    /**
+     * @desc 把字符串信息转换为实体对象
+     * @param orderCommand 字符串
+     * @return
+     */
     public static OrderCommand from(String orderCommand) {
         JSONObject jsonObject = new JSONObject(orderCommand);
 
