@@ -2,6 +2,7 @@ package com.coding.sales;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import com.coding.sales.common.Constant;
 import com.coding.sales.entity.ProductInfo;
 import com.coding.sales.entity.ProductInfoList;
 import com.coding.sales.entity.Userinfo;
@@ -25,16 +26,14 @@ import java.util.*;
 public class OrderApp {
 
     public static void main(String[] args) {
-//        if (args.length != 2) {
-//            throw new IllegalArgumentException("参数不正确。参数1为销售订单的JSON文件名，参数2为待打印销售凭证的文本文件名.");
-//        }
-//
-//        String jsonFileName = args[0];
-//        String txtFileName = args[1];
+        if (args.length != 2) {
+            throw new IllegalArgumentException("参数不正确。参数1为销售订单的JSON文件名，参数2为待打印销售凭证的文本文件名.");
+        }
 
-        String jsonFileName = "D:/workspace_jxk/temp/kata-precious_metal_sales_system-master/src/test/resources/sample_command.json";
-        String txtFileName = "xxxxx.txt";
-
+        String jsonFileName = args[0];
+        String txtFileName = args[1];
+//        String jsonFileName = "D:/workspace_jxk/temp/kata-precious_metal_sales_system-master/src/test/resources/sample_command.json";
+//        String txtFileName = "xxxxx.txt";
         String orderCommand = FileUtils.readFromFile(jsonFileName);
         OrderApp app = new OrderApp();
         String result = app.checkout(orderCommand);
@@ -56,8 +55,8 @@ public class OrderApp {
         List<OrderItemCommand> orderItemCommands = command.getItems();
         //获取到支付信息
         List<PaymentCommand> paymentsInfo = command.getPayments();
-
-
+        //优惠券
+        List<String> discount = command.getDiscounts();
         //订单编号
         String orderId = command.getOrderId();
         //订单创建时间
@@ -69,7 +68,7 @@ public class OrderApp {
         //原会员等级
         String oldMemberType = userinfo.getLevel();
         //新会员等级
-        String newMemberType = userinfo.getLevel()+"xxxx";//设置积分，会自动更新
+        String newMemberType = userinfo.getLevel();//设置积分，会自动更新
         //本次消费会员新增的积分
         int memberPointsIncreased = 0;//需要计算
         //会员最新的积分( = 老积分 + memberPointsIncreased)
@@ -79,16 +78,16 @@ public class OrderApp {
         //订单总金额
         BigDecimal totalPrice = BigDecimal.ZERO;
         //根据用户购买的商品列表信息组装数据
-        Map<String,Integer> products = new HashMap<String,Integer>();
+        Map<String,BigDecimal> products = new HashMap<String,BigDecimal>();
         for(OrderItemCommand o : orderItemCommands){
             //商品编号
             String product = o.getProduct();
             //数量
             BigDecimal amount = o.getAmount();
             if(products.get(product) == null ){
-                products.put(product,1);
+                products.put(product,amount);
             }else{
-                products.put(product,products.get(product)+1);
+                products.put(product,products.get(product).add(amount));
             }
         }
         Iterator<String> productsIt = products.keySet().iterator();
@@ -96,7 +95,7 @@ public class OrderApp {
             //商品编号
             String productNo = productsIt.next();
             //商品数量
-            BigDecimal amount = BigDecimal.valueOf(products.get(productNo));
+            BigDecimal amount = products.get(productNo);
             //商品详情
             ProductInfo productInfo = ProductInfoList.getProductInfo(productNo);
             //订单小计
@@ -105,16 +104,24 @@ public class OrderApp {
             totalPrice = totalPrice.add(amount.multiply(productInfo.getPrice()));
         }
         //优惠明细
-        List<DiscountItemRepresentation > discounts = new ArrayList<>();
-
-
-
-
-
-
-
+        List<DiscountItemRepresentation> discounts = new ArrayList<>();
         //优惠总金额
         BigDecimal totalDiscountPrice = BigDecimal.ZERO;
+        //优惠券
+        if(discount != null && discount.size()>0){
+            //循环订单信息
+            for(OrderItemRepresentation orderItem : orderItems){
+                //商品编号
+                String productNo =  orderItem.getProductNo();
+                //商品详情
+                ProductInfo productDetail = ProductInfoList.getProductInfo(productNo);
+                //九折
+                if(productDetail.getDiscounts().contains(Constant.NINE_POINT)){
+                    discounts.add(new DiscountItemRepresentation(productNo,orderItem.getProductName(),orderItem.getSubTotal().subtract(orderItem.getSubTotal().multiply(new BigDecimal(0.9)))));
+                    totalDiscountPrice = totalDiscountPrice.add(orderItem.getSubTotal().subtract(orderItem.getSubTotal().multiply(new BigDecimal(0.9))));
+                }
+            }
+        }
         //应收金额
         BigDecimal receivables = BigDecimal.ZERO;
         //付款记录
@@ -135,11 +142,30 @@ public class OrderApp {
         Iterator<String> payMethodIt = payMethod.keySet().iterator();
         while(payMethodIt.hasNext()){
             //组装支付金额
-           String  type= payMethodIt.next();
+            String type= payMethodIt.next();
             payments.add(new PaymentRepresentation(type,payMethod.get(type)));
         }
         //付款使用的打折券
-        List<String> discountCards = new ArrayList<>();
+        List<String> discountCards = discount;
+        //优惠后总金额更新
+        receivables = totalPrice.subtract(totalDiscountPrice);
+        String level = userinfo.getLevel();
+        if("普卡".equals(level)){
+            memberPointsIncreased =  receivables.multiply(new BigDecimal(1)).intValue();
+        }
+        if("金卡".equals(level)){
+            memberPointsIncreased = receivables.multiply(new BigDecimal(1.5)).intValue();
+        }
+        if("白金卡".equals(level)){
+            memberPointsIncreased = receivables.multiply(new BigDecimal(1.8)).intValue();
+        }
+        if("钻石卡".equals(level)){
+            memberPointsIncreased = receivables.multiply(new BigDecimal(2)).intValue();
+        }
+        //更新用户积分
+        userinfo.setScore(userinfo.getScore()+memberPointsIncreased);
+        memberPoints = userinfo.getScore();
+        newMemberType = userinfo.getLevel();
         orderRepresentation = new OrderRepresentation(orderId,createTime,memberNo,memberName,oldMemberType,newMemberType,memberPointsIncreased,memberPoints,orderItems,totalPrice,discounts,totalDiscountPrice,receivables,payments,discountCards);
         return orderRepresentation;
     }
