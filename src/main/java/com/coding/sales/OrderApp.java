@@ -8,6 +8,7 @@ import com.coding.sales.entity.Userinfo;
 import com.coding.sales.entity.UserinfoList;
 import com.coding.sales.input.OrderCommand;
 import com.coding.sales.input.OrderItemCommand;
+import com.coding.sales.input.PaymentCommand;
 import com.coding.sales.output.DiscountItemRepresentation;
 import com.coding.sales.output.OrderItemRepresentation;
 import com.coding.sales.output.OrderRepresentation;
@@ -53,9 +54,10 @@ public class OrderApp {
         Userinfo userinfo = UserinfoList.getUserinfo(command.getMemberId());
         //获取到购买的商品列表
         List<OrderItemCommand> orderItemCommands = command.getItems();
-        
+        //获取到支付信息
+        List<PaymentCommand> paymentsInfo = command.getPayments();
 
-        
+
         //订单编号
         String orderId = command.getOrderId();
         //订单创建时间
@@ -104,12 +106,38 @@ public class OrderApp {
         }
         //优惠明细
         List<DiscountItemRepresentation > discounts = new ArrayList<>();
+
+
+
+
+
+
+
         //优惠总金额
         BigDecimal totalDiscountPrice = BigDecimal.ZERO;
         //应收金额
         BigDecimal receivables = BigDecimal.ZERO;
         //付款记录
-        List< PaymentRepresentation > payments = new ArrayList<>();
+        List<PaymentRepresentation> payments = new ArrayList<>();
+        //根据用户的支付方式列表信息组装数据
+        Map<String,BigDecimal> payMethod = new HashMap<String,BigDecimal>();
+        for(PaymentCommand p : paymentsInfo){
+            //支付方式
+            String type = p.getType();
+            //金额
+            BigDecimal amount = p.getAmount();
+            if(payMethod.get(type) == null ){
+                payMethod.put(type,amount);
+            }else{
+                payMethod.put(type,payMethod.get(type).add(amount));
+            }
+        }
+        Iterator<String> payMethodIt = payMethod.keySet().iterator();
+        while(payMethodIt.hasNext()){
+            //组装支付金额
+           String  type= payMethodIt.next();
+            payments.add(new PaymentRepresentation(type,payMethod.get(type)));
+        }
         //付款使用的打折券
         List<String> discountCards = new ArrayList<>();
         orderRepresentation = new OrderRepresentation(orderId,createTime,memberNo,memberName,oldMemberType,newMemberType,memberPointsIncreased,memberPoints,orderItems,totalPrice,discounts,totalDiscountPrice,receivables,payments,discountCards);
