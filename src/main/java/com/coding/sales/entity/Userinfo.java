@@ -1,5 +1,7 @@
 package com.coding.sales.entity;
 
+import java.io.Serializable;
+
 /**
  * @desc 用户信息
  * @author jianxinkuan
@@ -12,7 +14,7 @@ public class Userinfo {
     //等级
     private String level;
     //卡号
-    private String cardNum;
+    private String memberId;
     //积分
     private Integer score;
 
@@ -25,19 +27,34 @@ public class Userinfo {
     }
 
     public String getLevel() {
-        return level;
+        if(this.score == null){
+            return "普卡";
+        }
+        if(this.score >= 0 && this.score < 10000){
+            return "普卡";
+        }
+        if(this.score >= 10000 && this.score < 50000){
+            return "金卡";
+        }
+        if(this.score >= 50000 && this.score < 100000){
+            return "白金卡";
+        }
+        if(this.score >= 100000){
+            return "钻石卡";
+        }
+        return null;
     }
 
     public void setLevel(String level) {
         this.level = level;
     }
 
-    public String getCardNum() {
-        return cardNum;
+    public String getMemberId() {
+        return memberId;
     }
 
-    public void setCardNum(String cardNum) {
-        this.cardNum = cardNum;
+    public void setMemberId(String memberId) {
+        this.memberId = memberId;
     }
 
     public Integer getScore() {
@@ -46,5 +63,22 @@ public class Userinfo {
 
     public void setScore(Integer score) {
         this.score = score;
+    }
+
+    public Userinfo(String name, String level, String memberId, Integer score) {
+        this.name = name;
+        this.level = level;
+        this.memberId = memberId;
+        this.score = score;
+    }
+
+    @Override
+    public String toString() {
+        return "Userinfo{" +
+                "name='" + name + '\'' +
+                ", level='" + getLevel() + '\'' +
+                ", memberId='" + memberId + '\'' +
+                ", score=" + score +
+                '}';
     }
 }
