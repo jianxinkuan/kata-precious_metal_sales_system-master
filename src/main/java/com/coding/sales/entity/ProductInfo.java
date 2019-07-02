@@ -9,12 +9,12 @@ import java.math.BigDecimal;
  * @author: admin
  * @create: 2019-07-02 17:04
  **/
-public class Product implements Serializable {
+public class ProductInfo implements Serializable {
 
     private static final long serialVersionUID = -2930175935815463028L;
 
     //商品编号
-    private String id;
+    private String product;
 
     //单位
     private String unit;
@@ -22,18 +22,15 @@ public class Product implements Serializable {
     //单价
     private BigDecimal price = BigDecimal.ZERO;
 
-    //折扣率：默认为1，不打折
-    private BigDecimal discountRate = BigDecimal.ONE;
-
-    //满减优惠信息
+    //优惠信息
     private String discounts;
 
-    public String getId() {
-        return id;
+    public String getProduct() {
+        return product;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setProduct(String product) {
+        this.product = product;
     }
 
     public String getUnit() {
@@ -50,14 +47,6 @@ public class Product implements Serializable {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
-    }
-
-    public BigDecimal getDiscountRate() {
-        return discountRate;
-    }
-
-    public void setDiscountRate(BigDecimal discountRate) {
-        this.discountRate = discountRate;
     }
 
     public String getDiscounts() {
